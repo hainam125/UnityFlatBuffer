@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using FlatBuffers;
 using MyGame.Sample;
 using System.IO;
@@ -9,7 +7,7 @@ public class Demo : MonoBehaviour {
 	private string pathData;
 
 	private void Start() {
-		pathData = Application.dataPath + "/saved.dat";
+		pathData = Application.dataPath + "/Basic/saved.dat";
 	}
 
 	private void Update() {
@@ -58,6 +56,7 @@ public class Demo : MonoBehaviour {
 		var path = builder.EndVector();
 
 		// Create our monster using `StartMonster()` and `EndMonster()`
+		// No need to be in right order as schema
 		Monster.StartMonster(builder);
 		Monster.AddPos(builder, Vec3.CreateVec3(builder, 1f, 2f, 3f));
 		Monster.AddHp(builder, (short)300);
