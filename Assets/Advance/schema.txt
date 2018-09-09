@@ -1,8 +1,0 @@
-namespace MyGame.Demo;
-
-table Fiend {
-  hp:short = 100;
-  name:string;
-  friendly:bool;
-  inventory:[string];
-}

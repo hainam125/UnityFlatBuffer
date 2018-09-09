@@ -24,10 +24,11 @@ public class BaseFB {
 		public System.Type type;
 		public StringOffset stringOffset;
 		public VectorOffset vectorOffset;
+		public Offset offset;
 	}
 
-	public byte[] ToBytes() {
-		var builder = new FlatBufferBuilder(1024);
+	private FlatBufferBuilder CreateBuilder(FlatBufferBuilder builder=null) {
+		if(builder == null) builder = new FlatBufferBuilder(1024);
 		var fields = GetProperties();
 		var fieldList = new List<FieldData>();
 
@@ -104,8 +105,21 @@ public class BaseFB {
 				if (list.Count > 0) {
 					var stringOffsets = new StringOffset[list.Count];
 					for (int i = list.Count - 1; i >= 0; i--) stringOffsets[i] = builder.CreateString((string)list[i]);
-					builder.StartVector(4, list.Count, 4);
+					builder.StartVector(4, list.Count, 4);//4: value for string from generated files
 					for (int i = list.Count - 1; i >= 0; i--) builder.AddOffset(stringOffsets[i].Value);
+					fieldData.vectorOffset = builder.EndVector();
+				}
+			}
+			else if (field.PropertyType.IsSubclassOf(typeof(Test))) {
+				fieldData.offset = ((Test)value).CreateOffset(builder);
+			}
+			else if (IsGenericListOfTest(field)) {
+				var list = (IList)value;
+				if (list.Count > 0) {
+					var dataOffsets = new Offset[list.Count];
+					for (int i = list.Count - 1; i >= 0; i--) dataOffsets[i] = ((Test)list[i]).CreateOffset(builder);
+					builder.StartVector(4, list.Count, 4);//4: value for object from generated files
+					for (int i = list.Count - 1; i >= 0; i--) builder.AddOffset(dataOffsets[i].Value);
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
@@ -162,18 +176,37 @@ public class BaseFB {
 			else if (IsType<List<string>>(field)) {
 				builder.AddOffset(index, field.vectorOffset.Value, 0);
 			}
+			else if (field.type.IsSubclassOf(typeof(Test))) {
+				builder.AddOffset(index, field.offset.Value, 0);
+			}
+			else if (IsGenericListOfTest(field)) {
+				builder.AddOffset(index, field.vectorOffset.Value, 0);
+			}
 		}
+		return builder;
+	}
+
+	private Offset CreateOffset(FlatBufferBuilder builder = null) {
+		CreateBuilder(builder);
+		int o = builder.EndObject();
+		return new Offset(o);
+	}
+
+	public byte[] ToBytes() {
+		var builder = CreateBuilder();
 		int o = builder.EndObject();
 		builder.Finish(new Offset(o).Value);
 		using (var ms = new MemoryStream(builder.SizedByteArray())) {
 			return ms.ToArray();
 		}
 	}
-
 	public void Update(byte[] bytes) {
 		var bb = new ByteBuffer(bytes);
 		__assign(bb.GetInt(bb.Position) + bb.Position, bb);
+		UpdateFields();
+	}
 
+	private void UpdateFields() {
 		var fields = GetProperties();
 		for (var i = 0; i < fields.Length; i++) {
 			var field = fields[i];
@@ -230,6 +263,12 @@ public class BaseFB {
 			else if (IsType<List<string>>(field)) {
 				field.SetValue(this, GetStringList(index), null);
 			}
+			else if (field.PropertyType.IsSubclassOf(typeof(Test))) {
+				field.SetValue(this, GetChildTestType(index, field.PropertyType), null);
+			}
+			else if (IsGenericListOfTest(field)) {
+				field.SetValue(this, GetChildTestTypeList(index, field.PropertyType.GetTypeInfo().GenericTypeArguments[0]), null);
+			}
 		}
 	}
 
@@ -262,6 +301,33 @@ public class BaseFB {
 
 	private string GetString(int index) {
 		int o = __p.__offset(initIndex + index); return o != 0 ? __p.__string(o + __p.bb_pos) : null;
+	}
+
+	private Test GetChildTestType(int index, System.Type type) {
+		int o = __p.__offset(initIndex + index);
+		if (o == 0) return null;
+		var rawTest = System.Activator.CreateInstance(type);
+		Test test = ((Test)rawTest);
+		test.__assign(__p.__indirect(o + __p.bb_pos), __p.bb);
+		test.UpdateFields();
+		return test;
+	}
+
+	private IList GetChildTestTypeList(int index, System.Type type) {
+		var listType = typeof(List<>).MakeGenericType(type);
+		var list = (IList)System.Activator.CreateInstance(listType);
+		int length = GetArrayLength(index);
+
+		for (int i = 0; i < length; i++) {
+			int o = __p.__offset(initIndex + index);
+			if (o == 0) list.Add(null);
+			var rawTest = System.Activator.CreateInstance(type);
+			Test test = ((Test)rawTest);
+			test.__assign(__p.__indirect(__p.__vector(o) + i * 4), __p.bb);
+			test.UpdateFields();
+			list.Add(test);
+		}
+		return list;
 	}
 
 	private List<byte> GetByteList(int index) {
@@ -360,9 +426,19 @@ public class BaseFB {
 		return p.PropertyType == typeof(T);
 	}
 
+	private bool IsGenericListOfTest(FieldData f) {
+		return f.type.IsGenericType && f.type.GetGenericTypeDefinition() == typeof(List<>) &&
+					 f.type.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(Test));
+	}
+
+	private bool IsGenericListOfTest(PropertyInfo f) {
+		return f.PropertyType.IsGenericType && f.PropertyType.GetGenericTypeDefinition() == typeof(List<>) &&
+			     f.PropertyType.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(Test));
+	}
 	private int GetArrayLength(int index) {
 		int o = __p.__offset(initIndex + index); return o != 0 ? __p.__vector_len(o) : 0;
 	}
+
 
 	private PropertyInfo[] GetProperties() {
 		var type = GetType();
@@ -387,11 +463,33 @@ public class Advance : MonoBehaviour {
 	}
 
 	private void SaveBuffer() {
-		var bytes = new Test {
+		var other1 = new Other1 {
+			MyEnum = TheEnum.Blue,
+			MyBool = false,
+			MyShort = 4,
+			MyInt = 5,
+			MyLong = 3030,
+			MyFloat = 320.5f,
+			MyDouble = 122.44,
+			MyString = "Bye World",
+			MyBoolList = new List<bool>() { false, true, true },
+			MyByteList = new List<byte>() { (byte)11, (byte)4 },
+			MyShortList = new List<short>() { 3, 1, 12, 5, 7, 9, 13 },
+			MyIntList = new List<int>() { 13, 24, 53 },
+			MyLongList = new List<long>() { 510, 360, 570, 2000000 },
+			MyFloatList = new List<float>() { -8f, 173f },
+			MyDoubleList = new List<double>() { -41.0, 12.02, 22.9, -5000000 },
+			MyStringList = new List<string>() { "Nope", "Nai" }
+		};
+
+		var bytes = new Other2 {
+			MyFriend = other1,
+			MyEnemies = new List<Other1> { other1, other1 },
+			MyOwnInt2 = 5000,
 			MyEnum = TheEnum.Green,
 			MyBool = true,
 			MyShort = 2,
-			MyInt = 5,
+			MyInt = 51123,
 			MyLong = 300,
 			MyFloat = 30.5f,
 			MyDouble = 22.44,
@@ -401,7 +499,7 @@ public class Advance : MonoBehaviour {
 			MyShortList = new List<short>() { 6, 8, 10 },
 			MyIntList = new List<int>() { 3, 4, 5 },
 			MyLongList = new List<long>() { 50, 60, 70 },
-			MyFloatList = new List<float>() { 8f, 17f },
+			MyFloatList = new List<float>() { 8f, 17f, 56f },
 			MyDoubleList = new List<double>() { 41.0, 22.9 },
 			MyStringList = new List<string>() { "Ho Ho", "Ahihi", "Ohoho" }
 		}.ToBytes();
@@ -418,13 +516,29 @@ public class Advance : MonoBehaviour {
 			bytes = new byte[f.Length];
 			f.Read(bytes, 0, bytes.Length);
 		}
-		var test = new Test();
+		var test = new Other2();
 		test.Update(bytes);
 		Debug.Log(test);
 	}
 }
 
 public enum TheEnum { Red, Blue, Green }
+
+public class Other1 : Test {
+	public int MyOwnInt1 { get; set; }
+}
+
+public class Other2 : Test {
+	public Other1 MyFriend { get; set; }
+	public List<Other1> MyEnemies { get; set; }
+	public int MyOwnInt2 { get; set; }
+
+	public override string ToString() {
+		string myEnemyList = string.Empty;
+		if (MyEnemies != null) foreach (var v in MyEnemies) myEnemyList += v.ToString() + "\n";
+		return string.Format("[Other2: [MyOwnInt2={1}] - {2}] \n MyFriend={0} \n\n MyEnemies: \n{3} ", MyFriend, MyOwnInt2, base.ToString(), myEnemyList);
+	}
+}
 
 public class Test : BaseFB {
 	public TheEnum MyEnum { set; get; }
@@ -446,25 +560,25 @@ public class Test : BaseFB {
 
 	public override string ToString() {
 		string myByteList = string.Empty;
-		foreach (var v in MyByteList) myByteList += v.ToString() + ":";
+		if (MyByteList != null) foreach (var v in MyByteList) myByteList += v.ToString() + ":";
 		string myBoolList = string.Empty;
-		foreach (var v in MyBoolList) myBoolList += v.ToString() + ":";
+		if (MyBoolList != null) foreach (var v in MyBoolList) myBoolList += v.ToString() + ":";
 		string myShortList = string.Empty;
-		foreach (var v in MyShortList) myShortList += v.ToString() + ":";
+		if (MyShortList != null) foreach (var v in MyShortList) myShortList += v.ToString() + ":";
 		string myIntList = string.Empty;
-		foreach (var v in MyIntList) myIntList += v.ToString() + ":";
+		if (MyIntList != null) foreach (var v in MyIntList) myIntList += v.ToString() + ":";
 		string myLongList = string.Empty;
-		foreach (var v in MyLongList) myLongList += v.ToString() + ":";
+		if (MyLongList != null) foreach (var v in MyLongList) myLongList += v.ToString() + ":";
 		string myFloatList = string.Empty;
-		foreach (var v in MyFloatList) myFloatList += v.ToString() + ":";
+		if (MyFloatList != null) foreach (var v in MyFloatList) myFloatList += v.ToString() + ":";
 		string myDoubleList = string.Empty;
-		foreach (var v in MyDoubleList) myDoubleList += v.ToString() + ":";
+		if (MyDoubleList != null) foreach (var v in MyDoubleList) myDoubleList += v.ToString() + ":";
 		string myStringList = string.Empty;
-		foreach (var v in MyStringList) myStringList += v.ToString() + ":";
+		if (MyStringList != null) foreach (var v in MyStringList) myStringList += v.ToString() + ":";
 		return string.Format("[Test: MyBool={0}, MyShort={1}, MyInt={2}, MyLong={3}, MyFloat={4}, MyDouble={5}, MyString={6}," +
 												 "MyByteList={7}, MyBoolList={8}, MyShortList={9}, MyIntList={10}, MyFloatList={11}, MyLongList={12}," +
-		                     "MyDoubleList={13}, MyStringList={14}, MyEnum={15} ]", MyBool, MyShort, MyInt, MyLong, MyFloat, MyDouble, MyString,
-		                     myByteList, myBoolList, myShortList, myIntList, myFloatList, myLongList, myDoubleList, myStringList, MyEnum);
+												 "MyDoubleList={13}, MyStringList={14}, MyEnum={15} ]", MyBool, MyShort, MyInt, MyLong, MyFloat, MyDouble, MyString,
+												 myByteList, myBoolList, myShortList, myIntList, myFloatList, myLongList, myDoubleList, myStringList, MyEnum);
 	}
 }
 

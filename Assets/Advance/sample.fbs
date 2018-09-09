@@ -1,0 +1,20 @@
+namespace MyGame.Demo;
+
+table Fiend {
+  hp:short = 100;
+  name:string;
+  friendly:bool;
+  inventory:[string];
+  item:Item;
+  equip:Equipment;
+}
+table Item {
+  name:string;
+  damage:short;
+}
+
+table Equipment {
+  name:string;
+  damage:short;
+  uses:int;
+}
