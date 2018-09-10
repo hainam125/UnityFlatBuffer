@@ -1,0 +1,34 @@
+﻿// Example IDL file for our monster's schema.
+namespace MyGame.Other;
+enum Color:byte { Red = 0, Green, Blue = 2 }
+union Equipment { Weapon, Armor }
+
+table Fiend {
+  mana:short;
+  hp:short;
+  name:string;
+  equipped:Equipment;
+}
+
+table Monster {
+  mana:short = 150;
+  hp:short = 100;
+  name:string;
+  friendly:bool = false (deprecated);
+  inventory:[ubyte];  // Vector of scalars.
+  data:[byte];
+  color:Color = Blue; // Enum.
+  weapons:[Weapon];   // Vector of tables.
+  equipped:Equipment; // Union.
+}
+
+table Weapon {
+  name:string;
+  damage:short;
+}
+
+table Armor {
+  name:string;
+  damage:short;
+  defence:short;
+}
