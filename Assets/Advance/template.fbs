@@ -1,0 +1,14 @@
+namespace MyGame.Demo;
+
+table ByteHolder {
+  data:[byte];
+}
+
+table SyncData {
+  model:string;
+  data:[ByteHolder];
+}
+
+table SyncUserDataResp {
+  data:[SyncData];
+}
