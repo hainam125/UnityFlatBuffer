@@ -35,7 +35,7 @@ namespace FlatBuffers {
 	}
 }
 
-public class BaseFB {
+public abstract class BaseFB {
 	private static int initIndex = 4;//4 get from basic schema
 	private Table __p;
 
@@ -58,13 +58,13 @@ public class BaseFB {
 			var fieldData = new FieldData { value = value, type = field.PropertyType };
 			fieldList.Add(fieldData);
 			if (value == null) continue;
-			if (IsType<string>(field)) {
+			if (field.IsType<string>()) {
 				fieldData.stringOffset = builder.CreateString((string)value);
 			}
 			else if (field.PropertyType.IsEnum) {
 				fieldData.stringOffset = builder.CreateString(value.ToString());
 			}
-			else if (IsType<List<byte>>(field)) {
+			else if (field.IsType<List<byte>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(1, list.Count, 1);
@@ -72,7 +72,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<bool>>(field)) {
+			else if (field.IsType<List<bool>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(1, list.Count, 1);
@@ -80,7 +80,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<short>>(field)) {
+			else if (field.IsType<List<short>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(2, list.Count, 2);
@@ -88,7 +88,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<int>>(field)) {
+			else if (field.IsType<List<int>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(4, list.Count, 4);
@@ -96,7 +96,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<long>>(field)) {
+			else if (field.IsType<List<long>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(8, list.Count, 8);
@@ -104,7 +104,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<float>>(field)) {
+			else if (field.IsType<List<float>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(4, list.Count, 4);
@@ -112,7 +112,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<double>>(field)) {
+			else if (field.IsType<List<double>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					builder.StartVector(8, list.Count, 8);
@@ -120,7 +120,7 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (IsType<List<string>>(field)) {
+			else if (field.IsType<List<string>>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					var stringOffsets = new StringOffset[list.Count];
@@ -130,14 +130,14 @@ public class BaseFB {
 					fieldData.vectorOffset = builder.EndVector();
 				}
 			}
-			else if (field.PropertyType.IsSubclassOf(typeof(MTest))) {
-				fieldData.offset = ((MTest)value).CreateOffset(builder);
+			else if (field.PropertyType.IsSubclassOf(typeof(BaseFB))) {
+				fieldData.offset = ((BaseFB)value).CreateOffset(builder);
 			}
 			else if (IsGenericListOfTest(field)) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					var dataOffsets = new Offset[list.Count];
-					for (int i = list.Count - 1; i >= 0; i--) dataOffsets[i] = ((MTest)list[i]).CreateOffset(builder);
+					for (int i = list.Count - 1; i >= 0; i--) dataOffsets[i] = ((BaseFB)list[i]).CreateOffset(builder);
 					builder.StartVector(4, list.Count, 4);//4: value for object from generated files
 					for (int i = list.Count - 1; i >= 0; i--) builder.AddOffset(dataOffsets[i].Value);
 					fieldData.vectorOffset = builder.EndVector();
@@ -196,7 +196,7 @@ public class BaseFB {
 			else if (IsType<List<string>>(field)) {
 				builder.AddOffset(index, field.vectorOffset.Value, 0);
 			}
-			else if (field.type.IsSubclassOf(typeof(MTest))) {
+			else if (field.type.IsSubclassOf(typeof(BaseFB))) {
 				builder.AddOffset(index, field.offset.Value, 0);
 			}
 			else if (IsGenericListOfTest(field)) {
@@ -232,59 +232,59 @@ public class BaseFB {
 		for (var i = 0; i < fields.Length; i++) {
 			var field = fields[i];
 			int index = i * 2;
-			if (IsType<bool>(field)) {
+			if (field.IsType<bool>()) {
 				field.SetValue(this, GetBool(index), null);
 			}
-			else if (IsType<byte>(field)) {
+			else if (field.IsType<byte>()) {
 				field.SetValue(this, GetBool(index), null);
 			}
-			else if (IsType<short>(field)) {
+			else if (field.IsType<short>()) {
 				field.SetValue(this, GetShort(index), null);
 			}
-			else if (IsType<int>(field)) {
+			else if (field.IsType<int>()) {
 				field.SetValue(this, GetInt(index), null);
 			}
-			else if (IsType<long>(field)) {
+			else if (field.IsType<long>()) {
 				field.SetValue(this, GetLong(index), null);
 			}
-			else if (IsType<float>(field)) {
+			else if (field.IsType<float>()) {
 				field.SetValue(this, GetFloat(index), null);
 			}
-			else if (IsType<double>(field)) {
+			else if (field.IsType<double>()) {
 				field.SetValue(this, GetDouble(index), null);
 			}
-			else if (IsType<string>(field)) {
+			else if (field.IsType<string>()) {
 				field.SetValue(this, GetString(index), null);
 			}
 			else if (field.PropertyType.IsEnum) {
 				var value = System.Enum.Parse(field.PropertyType, GetString(index));
 				field.SetValue(this, value, null);
 			}
-			else if (IsType<List<bool>>(field)) {
+			else if (field.IsType<List<bool>>()) {
 				field.SetValue(this, GetBoolList(index), null);
 			}
-			else if (IsType<List<byte>>(field)) {
+			else if (field.IsType<List<byte>>()) {
 				field.SetValue(this, GetByteList(index), null);
 			}
-			else if (IsType<List<short>>(field)) {
+			else if (field.IsType<List<short>>()) {
 				field.SetValue(this, GetShortList(index), null);
 			}
-			else if (IsType<List<int>>(field)) {
+			else if (field.IsType<List<int>>()) {
 				field.SetValue(this, GetIntList(index), null);
 			}
-			else if (IsType<List<long>>(field)) {
+			else if (field.IsType<List<long>>()) {
 				field.SetValue(this, GetLongList(index), null);
 			}
-			else if (IsType<List<float>>(field)) {
+			else if (field.IsType<List<float>>()) {
 				field.SetValue(this, GetFloatList(index), null);
 			}
-			else if (IsType<List<double>>(field)) {
+			else if (field.IsType<List<double>>()) {
 				field.SetValue(this, GetDoubleList(index), null);
 			}
-			else if (IsType<List<string>>(field)) {
+			else if (field.IsType<List<string>>()) {
 				field.SetValue(this, GetStringList(index), null);
 			}
-			else if (field.PropertyType.IsSubclassOf(typeof(MTest))) {
+			else if (field.PropertyType.IsSubclassOf(typeof(BaseFB))) {
 				field.SetValue(this, GetChildTestType(index, field.PropertyType), null);
 			}
 			else if (IsGenericListOfTest(field)) {
@@ -324,11 +324,11 @@ public class BaseFB {
 		int o = __p.__offset(initIndex + index); return o != 0 ? __p.__string(o + __p.bb_pos) : null;
 	}
 
-	private MTest GetChildTestType(int index, System.Type type) {
+	private BaseFB GetChildTestType(int index, System.Type type) {
 		int o = __p.__offset(initIndex + index);
 		if (o == 0) return null;
 		var rawTest = System.Activator.CreateInstance(type);
-		MTest test = ((MTest)rawTest);
+		var test = ((BaseFB)rawTest);
 		test.__assign(__p.__indirect(o + __p.bb_pos), __p.bb);
 		test.UpdateFields();
 		return test;
@@ -343,7 +343,7 @@ public class BaseFB {
 			int o = __p.__offset(initIndex + index);
 			if (o == 0) list.Add(null);
 			var rawTest = System.Activator.CreateInstance(type);
-			MTest test = ((MTest)rawTest);
+			var test = ((BaseFB)rawTest);
 			test.__assign(__p.__indirect(__p.__vector(o) + i * 4), __p.bb);
 			test.UpdateFields();
 			list.Add(test);
@@ -439,39 +439,37 @@ public class BaseFB {
 		return list;
 	}
 
-	private bool IsType<T>(FieldData f) {
-		return f.type == typeof(T);
-	}
-
-	private bool IsType<T>(PropertyInfo p) {
-		return p.PropertyType == typeof(T);
-	}
-
 	private bool IsGenericListOfTest(FieldData f) {
 		return f.type.IsGenericType && f.type.GetGenericTypeDefinition() == typeof(List<>) &&
-					 f.type.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(MTest));
+					 f.type.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(BaseFB));
 	}
 
 	private bool IsGenericListOfTest(PropertyInfo f) {
 		return f.PropertyType.IsGenericType && f.PropertyType.GetGenericTypeDefinition() == typeof(List<>) &&
-					 f.PropertyType.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(MTest));
+					 f.PropertyType.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(BaseFB));
 	}
 	private int GetArrayLength(int index) {
 		int o = __p.__offset(initIndex + index); return o != 0 ? __p.__vector_len(o) : 0;
 	}
 
+	private bool IsType<T>(FieldData field) {
+		return field.type == typeof(T);
+	}
 
-	private PropertyInfo[] GetProperties() {
-		var orderList = new List<System.Type>();
+	public PropertyInfo[] GetProperties(bool selfProperty = false) {
 		var type = GetType();
-		var iteratingType = type;
-		do {
-			orderList.Insert(0, iteratingType);
-			iteratingType = iteratingType.BaseType;
-		} while (iteratingType != null);
-
-		var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.OrderBy(x => orderList.IndexOf(x.DeclaringType)).ToArray();
+		var orderList = new List<System.Type>() { type };
+		if (selfProperty) {
+			var iteratingType = type.BaseType;
+			while (iteratingType != null) {
+				orderList.Insert(0, iteratingType);
+				iteratingType = iteratingType.BaseType;
+			}
+		}
+		var flags = BindingFlags.Public | BindingFlags.Instance;
+		if (selfProperty) flags |= BindingFlags.DeclaredOnly;
+		var props = type.GetProperties(flags)
+										.OrderBy(x => orderList.IndexOf(x.DeclaringType)).ToArray();
 
 		return props;
 	}
