@@ -5,13 +5,18 @@ using System.Reflection;
 using System.Collections;
 using System.Linq;
 
-public class Base0 : BaseFB {
-	public long Id { get; set; }
-	public long CreatedAt { get; set; }
+public class Base0 : BaseFB
+{
+    public virtual long Id { get; set; }
+}
+
+public class Base1 : Base0 {
+    public override long Id { get; set; }
+    public long CreatedAt { get; set; }
 	public long UpdatedAt { get; set; }
 }
 
-public class UBaseTest : Base0 {
+public class UBaseTest : Base1 {
 	public long UserId { get; set; }
 }
 
@@ -133,7 +138,7 @@ public abstract class BaseFB {
 			else if (field.PropertyType.IsSubclassOf(typeof(BaseFB))) {
 				fieldData.offset = ((BaseFB)value).CreateOffset(builder);
 			}
-			else if (IsGenericListOfTest(field)) {
+			else if (field.IsGenericList<BaseFB>()) {
 				var list = (IList)value;
 				if (list.Count > 0) {
 					var dataOffsets = new Offset[list.Count];
@@ -287,7 +292,7 @@ public abstract class BaseFB {
 			else if (field.PropertyType.IsSubclassOf(typeof(BaseFB))) {
 				field.SetValue(this, GetChildTestType(index, field.PropertyType), null);
 			}
-			else if (IsGenericListOfTest(field)) {
+			else if (field.IsGenericList<BaseFB>()) {
 				field.SetValue(this, GetChildTestTypeList(index, field.PropertyType.GetTypeInfo().GenericTypeArguments[0]), null);
 			}
 		}
@@ -444,10 +449,6 @@ public abstract class BaseFB {
 					 f.type.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(BaseFB));
 	}
 
-	private bool IsGenericListOfTest(PropertyInfo f) {
-		return f.PropertyType.IsGenericType && f.PropertyType.GetGenericTypeDefinition() == typeof(List<>) &&
-					 f.PropertyType.GetTypeInfo().GenericTypeArguments[0].IsSubclassOf(typeof(BaseFB));
-	}
 	private int GetArrayLength(int index) {
 		int o = __p.__offset(initIndex + index); return o != 0 ? __p.__vector_len(o) : 0;
 	}
@@ -459,7 +460,7 @@ public abstract class BaseFB {
 	public PropertyInfo[] GetProperties(bool selfProperty = false) {
 		var type = GetType();
 		var orderList = new List<System.Type>() { type };
-		if (selfProperty) {
+		if (!selfProperty) {
 			var iteratingType = type.BaseType;
 			while (iteratingType != null) {
 				orderList.Insert(0, iteratingType);

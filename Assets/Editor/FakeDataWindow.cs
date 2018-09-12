@@ -15,9 +15,11 @@ public class FakeDataWindow : EditorWindow {
 		moveButtonContent = new GUIContent("\u21b4", "move down"),
 		duplicateButtonContent = new GUIContent("+", "duplicate"),
 		deleteButtonContent = new GUIContent("-", "duplicate"),
-		addButtonContent = new GUIContent("+", "add element");
+		addButtonContent = new GUIContent("Add new", "add element");
 
-	private static GUILayoutOption miniButtonWidth = GUILayout.Width(20f);
+	private static GUILayoutOption
+        miniButtonWidth = GUILayout.Width(20f),
+        normalButtonHeight = GUILayout.Height(40f);
 
 	private bool selfProperty;
 	private bool isEmpty;
@@ -37,10 +39,10 @@ public class FakeDataWindow : EditorWindow {
 
 		if (isEmpty) {
 			objectClass = EditorGUILayout.TextField("Class", objectClass);
-			objectClass = "UTest";
+			objectClass = "MTest";
 			selfProperty = EditorGUILayout.Toggle("Self Property", selfProperty);
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button("Generate", GUILayout.Width(100), GUILayout.Height(40)) && !string.IsNullOrEmpty(objectClass)) {
+			if (GUILayout.Button("Generate", GUILayout.Width(100), normalButtonHeight) && !string.IsNullOrEmpty(objectClass)) {
 				objectType = typeof(BaseFB).Assembly.GetType(objectClass);
 				if (objectType != null) {
 					isEmpty = false;
@@ -74,24 +76,41 @@ public class FakeDataWindow : EditorWindow {
 				GUILayout.Space(15);
 			}
 
-			if (list.Count == 0 && GUILayout.Button(addButtonContent, EditorStyles.miniButton)) {
+			if (list.Count == 0 && GUILayout.Button(addButtonContent, normalButtonHeight)) {
 				InsertDataAt(0);
 			}
 
 			GUILayout.Space(15);
 
 			EditorGUILayout.BeginHorizontal();
-			if (GUILayout.Button("Save", GUILayout.Width(100), GUILayout.Height(40))) {
-				Debug.Log("Save Data");
+			if (GUILayout.Button("Save", GUILayout.Width(100), normalButtonHeight)) {
+                AssignFields();
+                if (objectType.IsSubclassOf(typeof(MBaseTest))) {
+                    var tList = new List<MBaseTest>();
+                    foreach (var item in list) tList.Add((MBaseTest)item);
+                    Helper.SaveMasterData(tList, Application.dataPath + "/Advance/mSaved.dat");
+                }
 			}
 			GUILayout.FlexibleSpace();
-			if (GUILayout.Button("Clear", GUILayout.Width(100), GUILayout.Height(40))) {
+			if (GUILayout.Button("Clear", GUILayout.Width(100), normalButtonHeight)) {
 				isEmpty = true;
 				objectClass = string.Empty;
 			}
 			EditorGUILayout.EndHorizontal();
 		}
 	}
+
+    private void AssignFields()
+    {
+        for (int n = 0; n < list.Count; n++)
+        {
+            var obj = list[n];
+            for (int i = 0; i < propertyInfos.Length; i++)
+            {
+                propertyInfos[i].SetValue(obj, fields[n][i]);
+            }
+        }
+    }
 
 	private void RenderButtons(int n) {
 		EditorGUILayout.BeginHorizontal();
@@ -162,6 +181,19 @@ public class FakeDataWindow : EditorWindow {
 		else if (p.IsType<string>()) {
 			if (field[i] == null) field[i] = string.Empty;
 			field[i] = EditorGUILayout.TextField(label, string.Format("{0}", field[i]));
-		}
-	}
+        }
+
+        if (p.IsGenericListType())
+        {
+            GUILayout.Label(label);
+            EditorGUI.indentLevel++;
+            
+
+            if (field[i] == null) field[i] = new List<string>();
+            
+
+            field[i] = EditorGUILayout.TextField(label, string.Format("{0}", field[i]));
+            EditorGUI.indentLevel--;
+        }
+    }
 }

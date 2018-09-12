@@ -26,18 +26,22 @@ public class Advance : MonoBehaviour {
 	}
 
 	private void SaveUser() {
-		var tests = new UTest[12];
+		var tests = new UTest[6];
 		for (int i = 0; i < tests.Length; i++) {
-			tests[i] = new UTest {
-				Id = i,
-				MasterId = Random.Range(0, 12),
-				Status = "End at: " + Helper.RandomDate()
-			};
+            tests[i] = new UTest {
+                Id = i + 1,
+                IdOfIcon = Random.Range(0, 12),
+                Status = (short)Random.Range(0, 3),
+                ExpiredTime = Helper.RandomDate().Ticks,
+                ClaimedTime = Helper.RandomDate().Ticks,
+                Name = "Present No " + Random.Range(0, 100),
+                IdsOfItem = new List<long>() { Random.Range(0, 5), Random.Range(6, 4) }
+            };
 		}
 
 		var builder = new FlatBufferBuilder(1024);
 
-		var modelName = builder.CreateString("MPresent");
+		var modelName = builder.CreateString("UPresent");
 
 		var bhOffsets = new Offset<ByteHolder>[tests.Length];
 		for (var index = 0; index < tests.Length; index++) {
@@ -88,29 +92,21 @@ public class Advance : MonoBehaviour {
 				var bytes = Helper.GetBytes(arraySegment);
 				var obj = new UTest();
 				obj.Update(bytes);
-				Debug.Log(obj.MasterId + " - " + obj.Status);
-			}
+				Debug.Log(obj.Id + " - " + obj.IdsOfItem.Count + " - " + obj.Status);
+            }
 		}
 	}
 
 	private void SaveMaster() {
-		var tests = new MTest[12];
-		for (int i = 0; i < tests.Length; i++) {
-			tests[i] = new MTest {
+		var tests = new List<MTest>();
+		for (int i = 0; i < 12; i++) {
+			tests.Add(new MTest {
 				Id = i,
 				IconName = "Icon Name: " + Random.Range(0, 1000),
 				Title = "My title: " + Random.Range(0, 10000)
-			};
+			});
 		}
-		using (var writer = new BinaryWriter(File.Open(pathMasterData, FileMode.Create))) {
-			foreach (var t in tests) {
-				writer.Write(t.Id);
-				var bytes = t.ToBytes();
-				writer.Write(bytes.Length);
-				writer.Write(bytes);
-			}
-		}
-		Debug.Log("Save Manay!");
+        Helper.SaveMasterData(tests, pathMasterData);
 	}
 
 	private void LoadMaster() {
@@ -122,25 +118,30 @@ public class Advance : MonoBehaviour {
 			var bytes = reader.ReadBytes(length);
 			var test = new MTest();
 			test.Update(bytes);
-			Debug.Log(id + " - " + test.Id);
+			if(id != test.Id) Debug.Log(id + " - " + test.Id);
 			tests.Add(test);
 		}
 		reader.Close();
-		Debug.Log(tests[Random.Range(0, tests.Count)]);
+		Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)]);
 		Debug.Log("Load Many!");
 	}
 }
 
 public class UTest : UBaseTest {
-	public long MasterId { get; set; }
-	public string Status { set; get; }
+    public long IdOfIcon { get; set; }
+    public List<long> IdsOfItem { set; get; }
+    public long ExpiredTime { set; get; }
+    public long ClaimedTime { set; get; }
+    public short Status { set; get; }
+    public string Name { set; get; }
 }
 
 public class MTest : MBaseTest {
 	public string IconName { get; set; }
 	public string Title { get; set; }
+    public List<string> List { get; set; }
 	public override string ToString() {
-		return string.Format("Id: {2} - IconName: {0} - Title: {1}", IconName, Title, Id);
+        return string.Empty;
 	}
 }
 
