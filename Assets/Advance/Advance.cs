@@ -6,13 +6,15 @@ using MyGame.Demo;
 
 public class Advance : MonoBehaviour {
 	public bool isMaster;
+    public string fileName;
+    public int amount;
 	private string pathMasterData;
 	private string pathUserData;
 
 	private void Start() {
-		pathMasterData = Application.dataPath + "/Advance/mSaved.dat";
-		pathUserData = Application.dataPath + "/Advance/uSaved.dat";
-	}
+		pathMasterData = Application.dataPath + "/Advance/Data/M" + fileName + "Saved.dat";
+		pathUserData = Application.dataPath + "/Advance/Data/U" + fileName + "Saved.dat";
+    }
 
 	private void Update() {
 		if (Input.GetKeyDown(KeyCode.S)) {
@@ -26,22 +28,14 @@ public class Advance : MonoBehaviour {
 	}
 
 	private void SaveUser() {
-		var tests = new UTest[6];
+		var tests = new UNightWalker[amount];
 		for (int i = 0; i < tests.Length; i++) {
-            tests[i] = new UTest {
-                Id = i + 1,
-                IdOfIcon = Random.Range(0, 12),
-                Status = (short)Random.Range(0, 3),
-                ExpiredTime = Helper.RandomDate().Ticks,
-                ClaimedTime = Helper.RandomDate().Ticks,
-                Name = "Present No " + Random.Range(0, 100),
-                IdsOfItem = new List<long>() { Random.Range(0, 5), Random.Range(6, 4) }
-            };
+            tests[i] = UNightWalker.GetSample();
 		}
 
 		var builder = new FlatBufferBuilder(1024);
 
-		var modelName = builder.CreateString("UPresent");
+		var modelName = builder.CreateString(tests[0].GetType().ToString());
 
 		var bhOffsets = new Offset<ByteHolder>[tests.Length];
 		for (var index = 0; index < tests.Length; index++) {
@@ -65,6 +59,10 @@ public class Advance : MonoBehaviour {
 		using (var ms = new MemoryStream(builder.SizedByteArray())) {
 			File.WriteAllBytes(pathUserData, ms.ToArray());
 			Debug.Log("SAVED USER!");
+            var list = tests[0].GetProperties();
+            var x = string.Empty;
+            foreach (var i in list) x += i.Name + ";";
+            Debug.Log(x);
 		}
 	}
 
@@ -90,58 +88,34 @@ public class Advance : MonoBehaviour {
 
 				var arraySegment = bytesHolder.Value.GetDataBytes();
 				var bytes = Helper.GetBytes(arraySegment);
-				var obj = new UTest();
+				var obj = new UNightWalker();
 				obj.Update(bytes);
-				Debug.Log(obj.Id + " - " + obj.IdsOfItem.Count + " - " + obj.Status);
+				Debug.Log(obj.Id + " - ");
             }
 		}
 	}
 
 	private void SaveMaster() {
-		var tests = new List<MTest>();
-		for (int i = 0; i < 12; i++) {
-			tests.Add(new MTest {
-				Id = i,
-				IconName = "Icon Name: " + Random.Range(0, 1000),
-				Title = "My title: " + Random.Range(0, 10000)
-			});
+		var tests = new List<MGrowthBoard>();
+		for (int i = 0; i < amount; i++) {
+			tests.Add(MGrowthBoard.GetSample());
 		}
-        Helper.SaveMasterData(tests, pathMasterData);
+        DataHelper.SaveMasterData(tests, pathMasterData);
 	}
 
 	private void LoadMaster() {
-		var reader = new BinaryReader(File.Open(pathMasterData, FileMode.Open));
-		var tests = new List<MTest>();
-		while (reader.BaseStream.Position != reader.BaseStream.Length) {
-			var id = reader.ReadInt64();
-			var length = reader.ReadInt32();
-			var bytes = reader.ReadBytes(length);
-			var test = new MTest();
-			test.Update(bytes);
-			if(id != test.Id) Debug.Log(id + " - " + test.Id);
-			tests.Add(test);
-		}
-		reader.Close();
-		Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)]);
+        var tests = DataHelper.LoadMaster<MGrowthBoard>(pathMasterData);
+
+        Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)].IdsOfSkillPoint.Count);
 		Debug.Log("Load Many!");
 	}
 }
 
 public class UTest : UBaseTest {
-    public long IdOfIcon { get; set; }
-    public List<long> IdsOfItem { set; get; }
-    public long ExpiredTime { set; get; }
-    public long ClaimedTime { set; get; }
-    public short Status { set; get; }
-    public string Name { set; get; }
+    
 }
 
 public class MTest : MBaseTest {
-	public string IconName { get; set; }
-	public string Title { get; set; }
-    public List<string> List { get; set; }
-	public override string ToString() {
-        return string.Empty;
-	}
+    
 }
 

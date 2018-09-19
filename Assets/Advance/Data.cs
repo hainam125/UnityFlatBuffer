@@ -470,7 +470,7 @@ public abstract class BaseFB {
 		var flags = BindingFlags.Public | BindingFlags.Instance;
 		if (selfProperty) flags |= BindingFlags.DeclaredOnly;
 		var props = type.GetProperties(flags)
-										.OrderBy(x => orderList.IndexOf(x.DeclaringType)).ToArray();
+                        .OrderBy(x => orderList.IndexOf(x.DeclaringType)).ToArray();
 
 		return props;
 	}
