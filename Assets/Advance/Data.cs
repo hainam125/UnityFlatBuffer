@@ -262,8 +262,12 @@ public abstract class BaseFB {
 				field.SetValue(this, GetString(index), null);
 			}
 			else if (field.PropertyType.IsEnum) {
-				var value = System.Enum.Parse(field.PropertyType, GetString(index));
-				field.SetValue(this, value, null);
+                var str = GetString(index);
+                if (!string.IsNullOrEmpty(str))
+                {
+                    var value = System.Enum.Parse(field.PropertyType, GetString(index));
+                    field.SetValue(this, value, null);
+                }
 			}
 			else if (field.IsType<List<bool>>()) {
 				field.SetValue(this, GetBoolList(index), null);

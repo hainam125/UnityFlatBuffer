@@ -52,5 +52,5 @@ public class UNightWalker: UBaseTest
         };
     }
 
-    public static List<long> idOfM = new List<long>() { 10002000,10004000,10006000,10056000};
+    public static List<long> idOfM = new List<long>() { 1,2,3,4,5 /*10056000, 10002000, 10004000*/};
 }

@@ -28,33 +28,34 @@ public class Advance : MonoBehaviour {
 	}
 
 	private void SaveUser() {
-		var tests = new List<UNightWalker>();
+		var tests = new List<UNightMare>();
 		for (int i = 0; i < amount; i++) {
-			tests.Add(UNightWalker.GetSample());
+			tests.Add(UNightMare.GetSample());
 		}
 
 		DataHelper.SaveUserData(tests, pathUserData);
 	}
 
 	private void LoadUser() {
-		var list = DataHelper.LoadUserData<UNightWalker>(pathUserData);
+		var list = DataHelper.LoadUserData<UParty>(pathUserData);
 		foreach (var i in list) {
 			Debug.Log(i.Id);
 		}
+        Debug.Log(pathUserData);
 	}
 
 	private void SaveMaster() {
-		var tests = new List<MGrowthBoard>();
+		var tests = new List<MRune>();
 		for (int i = 0; i < amount; i++) {
-			tests.Add(MGrowthBoard.GetSample());
+			tests.Add(MRune.GetSample());
 		}
 		DataHelper.SaveMasterData(tests, pathMasterData);
 	}
 
 	private void LoadMaster() {
-		var tests = DataHelper.LoadMasterData<MGrowthBoard>(pathMasterData);
+		var tests = DataHelper.LoadMasterData<MRune>(pathMasterData);
 
-		Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)].IdsOfSkillPoint.Count);
+		Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)].Id);
 		Debug.Log("Load Many!");
 	}
 }

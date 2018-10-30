@@ -37,8 +37,8 @@ public class FakeDataWindow : EditorWindow {
 	private bool isNew;
 	private int screenNo;
 
-	private static string defaultUserDataPath = Application.dataPath + "/Advance/Data/U_Saved.dat";
-	private static string defaultMasterDataPath = Application.dataPath + "/Advance/Data/M_Saved.dat";
+	private static string defaultUserDataPath = Application.dataPath + "/Advance/Data/";
+	private static string defaultMasterDataPath = Application.dataPath + "/Advance/Data/";
 	private string dataPath;
 
 	private bool isSavingData;
@@ -195,7 +195,8 @@ public class FakeDataWindow : EditorWindow {
 		GUILayout.Space(15);
 
 		scrollView = EditorGUILayout.BeginScrollView(scrollView, GUILayout.Width(position.width));
-		for (int n = 0; n < list.Count; n++) {
+        
+        for (int n = 0; n < list.Count; n++) {
 			RenderObjectButtons(n);
 			GUILayout.Space(10);
 			if (n > list.Count - 1) break;//remove last element
@@ -309,9 +310,15 @@ public class FakeDataWindow : EditorWindow {
 		else if (p.IsType<string>()) {
 			if (field[i] == null) field[i] = string.Empty;
 			field[i] = EditorGUILayout.TextField(label, string.Format("{0}", field[i]));
-		}
+        }
+        else if (p.PropertyType.IsEnum)
+        {
+            var enumType = p.PropertyType;
+            if (field[i] == null) field[i] = Enum.GetValues(enumType).GetValue(0);
+            field[i] = EditorGUILayout.EnumPopup(label, (Enum)Enum.ToObject(enumType, field[i]));
+        }
 
-		if (p.IsType<List<long>>()) {
+        if (p.IsType<List<long>>()) {
 
 			if (field[i] == null) field[i] = new List<long>();
 			var fList = field[i] as List<long>;
@@ -357,10 +364,10 @@ public class FakeDataWindow : EditorWindow {
 
 	private void LoadData() {
 		if (isUserData) {
-			list = DataHelper.LoadUserData(GetDataPath(), objectType);
+			list = DataHelper.LoadUserData(GetDataPath(objectType.Name + ".dat"), objectType);
 		}
 		else {
-			list = DataHelper.LoadMasterData(GetDataPath(), objectType);
+			list = DataHelper.LoadMasterData(GetDataPath(objectType.Name + ".dat"), objectType);
 		}
 		for (int i = 0; i < list.Count; i++) {
 			int length = propertyInfos.Length;
@@ -384,12 +391,12 @@ public class FakeDataWindow : EditorWindow {
 		if (isUserData) {
 			var tList = new List<UBaseTest>();
 			foreach (var item in list) tList.Add((UBaseTest)item);
-			DataHelper.SaveUserData(tList, GetDataPath());
+			DataHelper.SaveUserData(tList, GetDataPath(objectType.Name + ".dat"));
 		}
 		else {
 			var tList = new List<MBaseTest>();
 			foreach (var item in list) tList.Add((MBaseTest)item);
-			DataHelper.SaveMasterData(tList, GetDataPath());
+			DataHelper.SaveMasterData(tList, GetDataPath(objectType.Name + ".dat"));
 		}
 	}
 }
