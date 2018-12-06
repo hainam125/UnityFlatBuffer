@@ -364,10 +364,10 @@ public class FakeDataWindow : EditorWindow {
 
 	private void LoadData() {
 		if (isUserData) {
-			list = DataHelper.LoadUserData(GetDataPath(objectType.Name + ".dat"), objectType);
+			list = Data.LoadUserData(GetDataPath(objectType.Name + ".dat"), objectType);
 		}
 		else {
-			list = DataHelper.LoadMasterData(GetDataPath(objectType.Name + ".dat"), objectType);
+			list = Data.LoadMasterData(GetDataPath(objectType.Name + ".dat"), objectType);
 		}
 		for (int i = 0; i < list.Count; i++) {
 			int length = propertyInfos.Length;
@@ -391,12 +391,12 @@ public class FakeDataWindow : EditorWindow {
 		if (isUserData) {
 			var tList = new List<UBaseTest>();
 			foreach (var item in list) tList.Add((UBaseTest)item);
-			DataHelper.SaveUserData(tList, GetDataPath(objectType.Name + ".dat"));
+            Data.SaveUserData(tList, GetDataPath(objectType.Name + ".dat"));
 		}
 		else {
 			var tList = new List<MBaseTest>();
 			foreach (var item in list) tList.Add((MBaseTest)item);
-			DataHelper.SaveMasterData(tList, GetDataPath(objectType.Name + ".dat"));
+            Data.SaveMasterData(tList, GetDataPath(objectType.Name + ".dat"));
 		}
 	}
 }

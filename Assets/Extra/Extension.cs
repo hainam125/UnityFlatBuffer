@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 public static class Extension {
@@ -14,5 +15,17 @@ public static class Extension {
     public static bool IsGenericListType(this PropertyInfo propertyInfo)
     {
         return propertyInfo.PropertyType.IsGenericType && propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(List<>);
+    }
+
+    public static byte[] GetBytes(this ArraySegment<byte>? arraySegment)
+    {
+        if (arraySegment.HasValue && arraySegment.Value.Count > 0)
+        {
+            var array = arraySegment.Value;
+            var bytes = new byte[array.Count];
+            Array.Copy(array.Array, array.Offset, bytes, 0, array.Count);
+            return bytes;
+        }
+        return null;
     }
 }

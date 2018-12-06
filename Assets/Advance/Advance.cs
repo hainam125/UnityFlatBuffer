@@ -33,13 +33,13 @@ public class Advance : MonoBehaviour {
 			tests.Add(UNightMare.GetSample());
 		}
 
-		DataHelper.SaveUserData(tests, pathUserData);
+		Data.SaveUserData(tests, pathUserData);
 	}
 
 	private void LoadUser() {
-		var list = DataHelper.LoadUserData<UParty>(pathUserData);
+		var list = Data.LoadUserData(pathUserData, typeof(UNightMare));
 		foreach (var i in list) {
-			Debug.Log(i.Id);
+			Debug.Log(((UNightMare)i).Id);
 		}
         Debug.Log(pathUserData);
 	}
@@ -49,13 +49,13 @@ public class Advance : MonoBehaviour {
 		for (int i = 0; i < amount; i++) {
 			tests.Add(MRune.GetSample());
 		}
-		DataHelper.SaveMasterData(tests, pathMasterData);
+        Data.SaveMasterData(tests, pathMasterData);
 	}
 
 	private void LoadMaster() {
-		var tests = DataHelper.LoadMasterData<MRune>(pathMasterData);
+		var tests = Data.LoadMasterData(pathMasterData, typeof(MRune));
 
-		Debug.Log(tests.Count + " : " + tests[Random.Range(0, tests.Count)].Id);
+		Debug.Log(tests.Count + " : " + ((MRune)tests[Random.Range(0, tests.Count)]).Id);
 		Debug.Log("Load Many!");
 	}
 }
