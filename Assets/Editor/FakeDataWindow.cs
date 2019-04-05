@@ -44,6 +44,7 @@ public class FakeDataWindow : EditorWindow {
 	private bool isSavingData;
 	private bool selfProperty;
 	private string objectClass;
+    private int showIdx;
 	private Type objectType;
 	private object cachedObject;
 	private PropertyInfo[] propertyInfos;
@@ -160,6 +161,7 @@ public class FakeDataWindow : EditorWindow {
 		if (GUILayout.Button("New", GUILayout.Width(100), normalButtonHeight) && !string.IsNullOrEmpty(objectClass)) {
 			isNew = true;
 			screenNo = 2;
+            showIdx = -1;
 			SetupTypeData();
 			var listType = typeof(List<>).MakeGenericType(objectType);
 			list = (IList)Activator.CreateInstance(listType);
@@ -167,7 +169,8 @@ public class FakeDataWindow : EditorWindow {
 		if (GUILayout.Button("Load", GUILayout.Width(100), normalButtonHeight) && !string.IsNullOrEmpty(objectClass)) {
 			isNew = false;
 			screenNo = 2;
-			SetupTypeData();
+            showIdx = -1;
+            SetupTypeData();
 			LoadData();
 		}
 		EditorGUILayout.EndHorizontal();
@@ -186,17 +189,24 @@ public class FakeDataWindow : EditorWindow {
 			objectClass = string.Empty;
 		}
 
-		if (list.Count == 0 && GUILayout.Button(addButtonTextContent, GUILayout.Width(100), normalButtonHeight)) {
+
+        if (list.Count == 0 && GUILayout.Button(addButtonTextContent, GUILayout.Width(100), normalButtonHeight)) {
 			InsertDataAt(0);
 			return;
 		}
 		EditorGUILayout.EndHorizontal();
 
-		GUILayout.Space(15);
+        EditorGUILayout.BeginHorizontal();
+        DrawSearchButton(showIdx, 400, newIdx => showIdx = newIdx);
+        if (GUILayout.Button("X", miniButtonWidth, normalButtonHeight)) showIdx = -1;
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(15);
 
 		scrollView = EditorGUILayout.BeginScrollView(scrollView, GUILayout.Width(position.width));
         
         for (int n = 0; n < list.Count; n++) {
+            if (showIdx >= 0 && showIdx != n) continue;
 			RenderObjectButtons(n);
 			GUILayout.Space(10);
 			if (n > list.Count - 1) break;//remove last element
@@ -215,6 +225,45 @@ public class FakeDataWindow : EditorWindow {
 		EditorGUILayout.EndScrollView();
 
 	}
+
+    private void DrawSearchButton(int currentIdx, int width, Action<int> newIdAction ,GUIStyle toolbarButtonStyle = null, string nameDefault = "Search")
+    {
+        long value = 0;
+        string[] namesOfValue = new string[list.Count];
+        long[] idsOfValue = new long[list.Count];
+        for (int i = 0; i < list.Count; i++) {
+            long id = ((Base0)list[i]).Id;
+            idsOfValue[i] = id;
+            namesOfValue[i] = id.ToString();
+            if (i == currentIdx) value = id;
+        }
+
+        var dataValues = list;
+
+
+        Action<int> action = (index) =>
+        {
+            FilterPopup.Close();
+            if (currentIdx != index)
+            {
+                newIdAction.Invoke(index);
+                GUI.changed = true;
+                Repaint();
+            }
+        };
+        Utils.GUIModuleOfLongFilterPopupFullName(
+            value,
+            namesOfValue,
+            idsOfValue, 
+            action,
+            false,
+            width,
+            30,
+            width,
+            toolbarButtonStyle,
+            nameDefault
+        );
+    }
 
 	private void AssignFields() {
 		for (int n = 0; n < list.Count; n++) {
