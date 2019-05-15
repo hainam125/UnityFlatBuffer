@@ -1,0 +1,206 @@
+namespace com.gnt.flatbuffers;
+
+enum MsgType : byte {
+  NONE = 0,
+  REQ = 1,
+  RESP = 2,
+  RESP_ACK = 3,
+  COMM = 4,
+  NOTIFY = 5,
+  NOTIFY_ACK = 6,
+  SYS = 7
+}
+
+enum Cmd : byte {
+  NONE = 0,
+  AUTH = 1,
+  PING = 2,
+  CLOSE = 3,
+  API = 4,
+  OPERATOR = 5,
+}
+
+enum SubCmd : short {
+  NONE=0,
+  PING=1,
+
+  SYNC_BEGIN=1000,
+    SYNC_TIME,
+  SYNC_END=1100,
+
+  USER_BEGIN=1101,
+    USER_LOGIN,
+    USER_CHANGE_NICKNAME,
+    USER_SYNC_DATA,
+    OPEN_MAX_ITEM_BOX,
+    OPEN_MAX_MATERIAL_BOX,
+    OPEN_MAX_WEAPON_BOX,
+    OPEN_MAX_NIGHTMARE_BOX,
+    OPEN_MAX_NIGHT_WALKER_BOX,
+  USER_END=1200,
+
+  MASTER_DATA_BEGIN=1201,
+    MASTER_DATA_CHECKSUM,
+  MASTER_DATA_END=1300,
+
+  NIGHT_WALKER_BEGIN=1301,
+    NIGHT_WALKER_CREATE,
+    NIGHT_WALKER_SELL,
+    NIGHT_WALKER_LEVEL_UP,
+    NIGHT_WALKER_EQUIP,
+    NIGHT_WALKER_UN_EQUIP,
+    NIGHT_WALKER_EXT_GROWTH_BROAD,
+  NIGHT_WALKER_END=1400,
+
+  NIGHTMARE_BEGIN=1401,
+    NIGHT_MARE_CREATE,
+    NIGHT_MARE_SELL,
+    NIGHT_MARE_LEVEL_UP,
+  NIGHTMARE_END=1500,
+
+  PARTY_BEGIN=1501,
+    PARTY_UPDATE,
+    PARTY_DELETE,
+  PARTY_END=1600,
+
+  BRIDGE_BEGIN=1601,
+    BRIDGE_PEOPLE_GET,
+    BRIDGE_PEOPLE_UPDATE,
+    BRIDGE_COIN_DEPOSIT_IOS_CREATE,
+    BRIDGE_COIN_DEPOSIT_ANDROID_CREATE,
+    BRIDGE_COIN_DEPOSIT_IOS_UPDATE,
+    BRIDGE_COIN_DEPOSIT_ANDROID_UPDATE,
+  BRIDGE_END=1700,
+
+  INVITE_BEGIN=1701,
+    INVITE_CREATE,
+    SHORT_INVITE_CREATE,
+    INVITE_REWARD,
+  INVITE_END=1800,
+
+  SERIAL_CODE_BEGIN=1801,
+    SERIAL_CODE_REWARD,
+    CSERIAL_CODE_REWARD,
+  SERIAL_CODE_END=1900,
+
+  PIN_CODE_BEGIN=1901,
+    PIN_CODE_CREATE,
+    PIN_CODE_DELETE,
+    PIN_CODE_UPDATE,
+    PIN_CODE_GET,
+  PIN_CODE_END=2000,
+
+  NOTIFICATION_BEGIN=2001,
+    NOTIFICATION_GET,
+    NOTIFICATION_DETAIL_GET,
+  NOTIFICATION_END=2100,
+
+  WEAPON_BEGIN=2101,
+    WEAPON_CREATE,
+    WEAPON_SELL,
+    WEAPON_LOCK,
+    WEAPON_UNLOCK,
+    WEAPON_LEVEL_UP,
+  WEAPON_END=2200,
+
+  QUEST_BEGIN=2201,
+    QUEST_START,
+    QUEST_COMPLETE,
+    QUEST_GIFT_CLAIM,
+  QUEST_END=2300,
+
+  PRESENT_BEGIN=2301,
+    PRESENT_CLAIM,
+    PRESENT_CLAIM_ALL,
+    PRESENT_CLAIM_ALL_EXCEPT_NWM,
+  PRESENT_END=2400,
+
+  CHEAT_BEGIN=9901,
+    CHEAT_NIGHT_WALKER_CREATE,
+    CHEAT_NIGHT_WALKER_DELETE,
+    CHEAT_NIGHT_WALKER_LEVEL_UP,
+    CHEAT_NIGHT_MARE_CREATE,
+    CHEAT_NIGHT_MARE_DELETE,
+    CHEAT_NIGHT_MARE_LEVEL_UP,
+    CHEAT_ADD_COIN_FREE,
+    CHEAT_CONSUME_COIN_FREE,
+    CHEAT_CONSUME_COIN_PURCHASE,
+    CHEAT_EXP_GILLAN_JEWELS,
+    CHEAT_COMPLETE_QUEST,
+    CHEAT_SEND_PRESENT,
+    CHEAT_NIGHT_WALKER_SKIN,
+    CHEAT_GROWTH_BROAD_AP,
+    CHEAT_ITEMS,
+    CHEAT_NIGHT_WALKER_SKILL,
+    CHEAT_NIGHTMARE_SKILL,
+  CHEAT_END=10000,
+
+}
+
+enum ErrorCode: short {
+  NONE=0,
+  AUTH_FAIL,
+
+  SOCKET_DISCONNECT = 30,
+  SOCKET_REQUEST_TIME_OUT,
+  SOCKET_KICK_BY_ANOTHER,
+  SOCKET_SWITCH_SERVER,
+  SOCKET_MAINTAINED_SERVER,
+  SOCKET_FORCE_UPDATE,
+  SOCKET_TOKEN_TIME_OUT,
+
+  NOT_FOUND=404,
+  INVALID_MSG=509
+}
+
+enum LoginMethod: int {
+  NONE=0,
+  GMAIL,
+  TWITTER,
+  FACEBOOK,
+  LINE
+}
+
+table ApiReq {
+  data:[ubyte]; // request.fbs
+}
+
+table ApiResp {
+  status:short; // status.fbs
+  time:long;
+  response:[byte]; // response.fbs
+  userData:[byte]; // UserData
+}
+
+table UpsertedData {
+  type:string; // model name
+  data:[byte]; // serialized model
+}
+
+table DeletedData {
+  type:string; // model name
+  id:long;  // model id
+}
+
+table UserData {
+   upserted:[UpsertedData];
+   deleted:[DeletedData];
+}
+
+union AnyMsg {
+  ApiReq,
+  ApiResp
+}
+
+table ApiMsg {
+  userId:long;
+  msgId:int;
+  needAck:bool;
+  msgType:MsgType;
+  cmd:Cmd;
+  subCmd:short; // SubCmd
+  error:short; // ErrorCode
+  data:AnyMsg;
+}
+
+root_type ApiMsg;

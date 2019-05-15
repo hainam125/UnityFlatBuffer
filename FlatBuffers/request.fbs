@@ -1,0 +1,326 @@
+namespace com.gnt.flatbuffers.mash;
+
+table UserLoginReq {
+  osVersion:string;
+  deviceType:string;
+  deviceId:string;
+  deviceName:string;
+  appId:string;
+  appVersion:string;
+  uniqueId:string;
+  deviceModel:string;
+  resolution:string;
+  cpuArch:string;
+  memoryTotal:int;
+  openglesVersion:string;
+  appName:string;
+  bundleId:string;
+  storageTotal:int;
+  carrier:string;
+  buildVersion:string;
+  userAgent:string;
+  vendorId:string;
+  uuid:string;
+  advertisingID:string;
+  ADIDIsTrackingEnabled:byte;
+  ADIDCreateAt:long;
+}
+
+table ChangeNicknameReq {
+  nickname:string;
+}
+
+table SyncUserDataReq {
+  models:[string];
+}
+
+table CheatNightWalkerCreateReq {
+  masterIds:[long];
+}
+
+table CheatNightWalkerDeleteReq {
+  userNWIds:[long];
+}
+
+table CheatNightWalkerLevelUpReq {
+  userNWId:long;
+  exp:long;
+}
+
+table CheatNightMareCreateReq {
+  masterIds:[long];
+}
+
+table CheatNightMareDeleteReq {
+  userNMIds:[long];
+}
+
+table CheatNightMareLevelUpReq {
+  userNMId:long;
+  exp:long;
+}
+
+table CheatAddFreeCoinReq {
+  coin:int;
+}
+
+table CheatConsumeCoinReq {
+  coin:int;
+}
+
+table PartyUpdateReq {
+  partyNo:byte;
+  partyName:string;
+  userNightWalkerIds:[long];
+  userNightmareIds:[long];
+}
+
+table BridgePeopleUpdateReq {
+  iosDeviceToken:string;
+  androidRegistrationId:string;
+  fcmRegistrationId:string;
+  birthYearMonth:string;
+}
+
+table BridgePeopleGetReq {
+  bridgeProfile:bool;
+  bridgeExtProfile:bool;
+  moneyField:bool;
+}
+
+table BridgeCoinDepositCreateReq {
+  yen:int;
+  price:float;
+  priceLocale:string;
+  coin:int;
+  coinFree:int;
+  coinName:string;
+  coinFreeName:string;
+  checkProductId:string;
+}
+
+table BridgeCoinDepositIsoUpdateReq {
+  bridgeTransId:long;
+  receiptData:string;
+  receiptTransactionId:string;
+}
+
+table BridgeCoinDepositAndroidUpdateReq {
+  bridgeTransId:long;
+  purchaseData:string;
+  dataSignature:string;
+}
+
+table RewardByInviteCodeReq {
+  inviteCode:string;
+}
+
+table SerialCodeReq {
+  serialCode:string;
+}
+
+table CSerialCodeReq {
+  serialCode:string;
+}
+
+table PinCodeCreateReq {
+  pincodeCampaignId:long;
+  identifier:string;
+}
+
+table PinCodeGetReq {
+  pincodeCampaignId:long;
+  gameId:int;
+  identifier:string;
+}
+
+table PinCodeUpdateReq {
+  pincodeCampaignId:long;
+  targetGameId:int;
+  targetIdentifier:string;
+  pinCode:string;
+}
+
+table PinCodeDeleteReq {
+ pincodeCampaignId:long;
+ gameId:int;
+ identifier:string;
+}
+
+enum SortBy: byte {
+  INFO_ID=0,
+  START_AT,
+  END_AT
+}
+
+enum SortOrder: byte {
+  ASC=0,
+  DESC=1,
+}
+
+enum ChanelRange: byte {
+  NONE=0,
+  HANGAME=1,
+  SQEX_YAHOO,
+  NICONICO
+}
+
+enum LangCode: byte {
+  JA=0,
+  EN
+}
+
+table NotificationDetailReq {
+  infoId:long;
+  langCode:LangCode;
+}
+
+table NotificationReq {
+  sortBy:SortBy;
+  sortOrder:SortOrder;
+  count:short;
+  startIndex:long;
+  priority:byte;
+  minimumResults:short;
+  channelRange:ChanelRange;
+  langCode:LangCode;
+  deviceType:short;
+}
+
+table CheatExpGillanJewelsReq {
+  experience:long;
+  gillan:int;
+  jewels:int;
+}
+
+table NightWalkerCreateReq {
+  masterIds:[long];
+}
+
+table NightWalkerLevelUpReq {
+  nightWalkerId:long;
+  items:[long];
+}
+
+table NightWalkerSellReq {
+  nightWalkerId:[long];
+}
+
+table NightWalkerEquipReq {
+  nightWalkerId:long;
+  mainWeapon:long;
+  subWeapon:long;
+}
+
+table NightWalkerUnEquipReq {
+  nightWalkerId:long;
+  mainWeapon:long;
+  subWeapon:long;
+}
+
+table NightMareCreateReq {
+  masterIds:[long];
+}
+
+table NightMareSellReq {
+  nightMareId:[long];
+}
+
+table NightMareLevelUpReq {
+  nightMareId:long;
+  items:[long];
+}
+
+table QuestStartReq {
+  masterId:long;
+}
+
+enum QuestState: byte {
+  NONE=0,
+  WIN,
+  LOSE
+}
+
+table QuestCompleteReq {
+  masterId:long;
+  result:QuestState;
+}
+
+table QuestGiftClaimReq {
+  masterId:long;
+}
+
+table PresentClaimReq {
+  presentId:long;
+}
+
+table CheatCompleteQuestReq {
+  requestId:[long];
+}
+
+table CheatSendPresentReq {
+  idOfIcon:long;
+  itemIds:[long];
+  weaponIds:[long];
+  materialIds:[long];
+  nightWalkerIds:[long];
+  nightmareIds:[long];
+}
+
+table CheatNightWalkerSkinReq {
+  nightWalkerId:long;
+  skinIds:[long];
+}
+
+table CheatGrowthBroadApReq {
+  growthBroadId:long;
+  ap:long;
+}
+
+table NightWalkerExtraGrowthBroadReq {
+  index:int;
+}
+
+table PartyDeleteReq {
+  partyNo:byte;
+}
+
+table CheatItemsReq {
+  mItemIds:[long];
+}
+
+table WeaponCreateReq {
+  masterId:[long];
+}
+
+table WeaponSellReq {
+  weaponId:[long];
+}
+
+table WeaponLockReq {
+  weaponId:long;
+}
+
+table WeaponUnLockReq {
+  weaponId:long;
+}
+
+table Material {
+  id:long;
+  amount:int;
+}
+
+table WeaponLevelUpReq {
+  weaponId:long;
+  materials:[Material];
+}
+
+table CheatNightWalkerSkillReq {
+  nightWalkerId:long;
+  mSkill:[long];
+}
+
+table CheatNightmareSkillReq {
+  nightmareId:long;
+  mSkill:[long];
+}

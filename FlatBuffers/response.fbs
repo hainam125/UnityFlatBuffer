@@ -1,0 +1,104 @@
+namespace com.gnt.flatbuffers.mash;
+
+table UserLoginResp {
+  userId:long;
+  uniqueId:string;
+  token:string;
+}
+
+table SyncTimeResp {
+  time:long;
+  timezone:float;
+}
+
+table FileChecksum {
+  name:string;
+  size:int;
+  checksum:long;
+}
+
+table MasterDataChecksumResp {
+  revision:string;
+  checksum:[FileChecksum];
+}
+
+table ByteHolder {
+  data:[byte];
+}
+
+table SyncData {
+  model:string;
+  data:[ByteHolder];
+}
+
+table SyncUserDataResp {
+  data:[SyncData];
+}
+
+table BridgePeopleGetResp {
+  nativeUserId:long;
+  gameId:int;
+  deviceType:short;
+  inviteNativeUserId:long;
+  iosDeviceToken:string;
+  androidRegistrationId:string;
+  fcmRegistrationId:string;
+  nativeTagName:string;
+  userId:long;
+  userRank:byte;
+  nickName:string;
+  tagName:string;
+  sex:byte;
+  thumbnailUrl:string;
+  introduction:string;
+  channel:short;
+  mailaddressPc:string;
+  mailaddressPcCheckDate:string;
+  mailadderssMobile:string;
+  mailaddressMobileCheckDate:string;
+  isInsiderUser:byte;
+  birthYearMonth:string;
+  bridgeBirthYearMonth:string;
+  cesaLimitAge:short;
+  hashTelNumber:string;
+  sqexId:string;
+  sqexIdUpdateAt:string;
+  chargeMoneyTotal:long;
+  chargeMoneyThisMonth:long;
+  lastChargeDate:string;
+}
+
+table BridgeCoinDepositCreateResp {
+  bridgeTransId:string;
+}
+
+table BridgeCoinDepositIosResp {
+  receiptStatus:string;
+  reciptProductId:string;
+  commitStatus:byte;
+}
+
+table PinCodeCreateResp {
+  pinCode:string;
+}
+
+table PinCodeGetResp {
+  targetGameId:int;
+  targetIdentifier:string;
+}
+
+table NotificationDetailResp {
+  infoId:long;
+  infoImageUrl:string;
+  infoCategoryId:string;
+  infoCategoryName:string;
+  infoTitle:string;
+  infoBody:string;
+  startAt:long;
+  endAt:long;
+  createAt:long;
+}
+
+table NotificationResp {
+  infoList:[NotificationDetailResp];
+}
